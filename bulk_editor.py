@@ -182,31 +182,39 @@ class BulkEditor:
         filter_frame = tk.Frame(panel, bg='white')
         filter_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        tk.Label(filter_frame, text="Filter tags:", bg='white', font=('Arial', 10)).pack(anchor=tk.W)
+        tk.Label(filter_frame, text="Filter tags in list:", bg='white', font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(0, 5))
         
-        filter_input_frame = tk.Frame(filter_frame, bg='white')
-        filter_input_frame.pack(fill=tk.X, pady=5)
+        tag_filter_input_frame = tk.Frame(filter_frame, bg='white')
+        tag_filter_input_frame.pack(fill=tk.X, pady=2)
         
-        self.tag_filter_entry = tk.Entry(filter_input_frame, width=25)
+        self.tag_filter_entry = tk.Entry(tag_filter_input_frame, width=25)
         self.tag_filter_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
         self.tag_filter_entry.bind('<KeyRelease>', lambda e: self._update_tag_list())
         
         tk.Button(
-            filter_input_frame, text="Clear",
+            tag_filter_input_frame, text="Clear",
             command=lambda: [self.tag_filter_entry.delete(0, tk.END), self._update_tag_list()],
             bg='#666', fg='white', font=('Arial', 9)
         ).pack(side=tk.LEFT, padx=5)
         
-        # Toggle for filtering images too
-        self.filter_images_var = tk.BooleanVar(value=False)
-        self.filter_images_check = tk.Checkbutton(
-            filter_frame,
-            text="Also filter images by tag",
-            variable=self.filter_images_var,
-            bg='white',
-            command=self._on_filter_images_toggle
-        )
-        self.filter_images_check.pack(anchor=tk.W, pady=2)
+        # Separator
+        tk.Frame(filter_frame, bg='#e0e0e0', height=1).pack(fill=tk.X, pady=10)
+        
+        # Image filter section (NEW - separate from tag filter)
+        tk.Label(filter_frame, text="Filter images by tag:", bg='white', font=('Arial', 10, 'bold')).pack(anchor=tk.W, pady=(5, 5))
+        
+        image_filter_input_frame = tk.Frame(filter_frame, bg='white')
+        image_filter_input_frame.pack(fill=tk.X, pady=2)
+        
+        self.image_filter_entry = tk.Entry(image_filter_input_frame, width=25)
+        self.image_filter_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        self.image_filter_entry.bind('<KeyRelease>', lambda e: self._on_image_filter_change())
+        
+        tk.Button(
+            image_filter_input_frame, text="Clear",
+            command=lambda: [self.image_filter_entry.delete(0, tk.END), self._on_image_filter_clear()],
+            bg='#666', fg='white', font=('Arial', 9)
+        ).pack(side=tk.LEFT, padx=5)
         
         # Operations frame
         ops_frame = tk.LabelFrame(panel, text="Bulk Operations", bg='white', font=('Arial', 11, 'bold'))
@@ -248,7 +256,21 @@ class BulkEditor:
             bg='white', fg='#666', font=('Arial', 9), justify=tk.LEFT
         )
         info.pack(pady=10)
-        
+
+    def _on_image_filter_change(self):
+        """Handle image filter change - separate from tag filter"""
+        filter_text = self.image_filter_entry.get().strip().lower()
+        if filter_text:
+            self._filter_images_by_tag(filter_text)
+        else:
+            # Show all images again
+            self._reload_grid()
+
+
+    def _on_image_filter_clear(self):
+        """Clear image filter and show all images"""
+        self._reload_grid()
+
     def _on_canvas_configure(self, event):
         """Handle canvas resize to reflow grid"""
         # Update the width of the grid container to match canvas
@@ -458,10 +480,7 @@ class BulkEditor:
             if not filter_text or filter_text in tag.lower():
                 self.tag_listbox.insert(tk.END, f"{tag} ({count}/{total_selected})")
         
-        # Apply image filter if enabled
-        if hasattr(self, 'filter_images_var') and self.filter_images_var.get() and filter_text:
-            self._filter_images_by_tag(filter_text)
-            
+        
     def _bulk_add_tag(self):
         """Add tag to all selected images"""
         if not self.selected_images:

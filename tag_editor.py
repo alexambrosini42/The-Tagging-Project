@@ -4,7 +4,7 @@ Works with a subset of images from bulk editor
 """
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 import os
 from pathlib import Path
@@ -155,42 +155,161 @@ class TagEditor:
         tk.Button(add_frame, text="Add", command=self._add_tag, bg='#2196F3', fg='white').pack(side=tk.LEFT)
     
     def _create_suggestion_panel(self, parent):
-        """Create suggestions panel (from selected images only)"""
+        """Create suggestions panel with separate global/local tabs and bulk operations"""
         suggest_frame = tk.Frame(parent, bg='#f5f5f5')
-        parent.add(suggest_frame, width=300)
+        parent.add(suggest_frame, width=350)
         
         # Info label
         info = tk.Label(
             suggest_frame, 
-            text=f"Suggestions from {len(self.image_list)} selected images",
-            bg='#f5f5f5', font=('Arial', 9), wraplength=280
+            text=f"Tag Management - {len(self.image_list)} selected images",
+            bg='#f5f5f5', font=('Arial', 10, 'bold'), wraplength=330
         )
         info.pack(pady=10, padx=10)
         
-        # Filter
-        search_frame = tk.Frame(suggest_frame, bg='#f5f5f5')
-        search_frame.pack(fill=tk.X, padx=10, pady=10)
+        # Notebook for Global/Selected tabs
+        notebook = ttk.Notebook(suggest_frame)
+        notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
-        tk.Label(search_frame, text="Filter:", bg='#f5f5f5').pack(side=tk.LEFT)
-        self.filter_entry = tk.Entry(search_frame, width=20)
-        self.filter_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
-        self.filter_entry.bind('<KeyRelease>', self._on_filter_change)
+        # === TAB 1: Global Tags (all images) ===
+        global_tab = tk.Frame(notebook, bg='white')
+        notebook.add(global_tab, text='All Tags (Global)')
         
-        # Global frequency (from selected images)
-        global_frame = tk.LabelFrame(suggest_frame, text='Tags in Selection', bg='white')
-        global_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        # Filter for global
+        global_filter_frame = tk.Frame(global_tab, bg='white')
+        global_filter_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        global_scroll = tk.Scrollbar(global_frame)
+        tk.Label(global_filter_frame, text="Filter:", bg='white').pack(side=tk.LEFT)
+        self.global_filter_entry = tk.Entry(global_filter_frame, width=20)
+        self.global_filter_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.global_filter_entry.bind('<KeyRelease>', lambda e: self._update_global_list())
+        
+        tk.Button(
+            global_filter_frame, text="Clear",
+            command=lambda: [self.global_filter_entry.delete(0, tk.END), self._update_global_list()],
+            bg='#666', fg='white', font=('Arial', 8)
+        ).pack(side=tk.LEFT, padx=2)
+        
+        # Global listbox
+        global_list_frame = tk.Frame(global_tab, bg='white')
+        global_list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        global_scroll = tk.Scrollbar(global_list_frame)
         global_scroll.pack(side=tk.RIGHT, fill=tk.Y)
         
-        self.global_listbox = tk.Listbox(global_frame, yscrollcommand=global_scroll.set, font=('Arial', 10))
+        self.global_listbox = tk.Listbox(global_list_frame, yscrollcommand=global_scroll.set, font=('Arial', 10))
         self.global_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.global_listbox.bind('<Double-Button-1>', self._add_from_global)
         global_scroll.config(command=self.global_listbox.yview)
         
-        tk.Button(suggest_frame, text="← Add Selected Tag", command=self._add_from_global_btn,
+        tk.Button(global_tab, text="← Add Selected Tag to Current Image", 
+                command=self._add_from_global_btn,
                 bg='#2196F3', fg='white').pack(fill=tk.X, padx=10, pady=5)
-    
+        
+        # === TAB 2: Selected Images Tags ===
+        selected_tab = tk.Frame(notebook, bg='white')
+        notebook.add(selected_tab, text='Tags in Selection')
+        
+        # Filter for selected
+        selected_filter_frame = tk.Frame(selected_tab, bg='white')
+        selected_filter_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        tk.Label(selected_filter_frame, text="Filter:", bg='white').pack(side=tk.LEFT)
+        self.selected_filter_entry = tk.Entry(selected_filter_frame, width=20)
+        self.selected_filter_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.selected_filter_entry.bind('<KeyRelease>', lambda e: self._update_selected_list())
+        
+        tk.Button(
+            selected_filter_frame, text="Clear",
+            command=lambda: [self.selected_filter_entry.delete(0, tk.END), self._update_selected_list()],
+            bg='#666', fg='white', font=('Arial', 8)
+        ).pack(side=tk.LEFT, padx=2)
+        
+        # Selected listbox
+        selected_list_frame = tk.Frame(selected_tab, bg='white')
+        selected_list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        selected_scroll = tk.Scrollbar(selected_list_frame)
+        selected_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.selected_listbox = tk.Listbox(selected_list_frame, yscrollcommand=selected_scroll.set, font=('Arial', 10))
+        self.selected_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.selected_listbox.bind('<Double-Button-1>', self._add_from_selected)
+        selected_scroll.config(command=self.selected_listbox.yview)
+        
+        tk.Button(selected_tab, text="← Add Selected Tag to Current Image", 
+                command=self._add_from_selected_btn,
+                bg='#2196F3', fg='white').pack(fill=tk.X, padx=10, pady=5)
+        
+        # === BULK OPERATIONS ===
+        ops_frame = tk.LabelFrame(suggest_frame, text="Bulk Operations (All Selected Images)", 
+                                bg='#f5f5f5', font=('Arial', 10, 'bold'), padx=10, pady=10)
+        ops_frame.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Add tag to all
+        add_bulk_frame = tk.Frame(ops_frame, bg='#f5f5f5')
+        add_bulk_frame.pack(fill=tk.X, pady=3)
+        
+        tk.Label(add_bulk_frame, text="Add tag:", bg='#f5f5f5', font=('Arial', 9)).pack(side=tk.LEFT)
+        self.bulk_add_entry = tk.Entry(add_bulk_frame, width=15)
+        self.bulk_add_entry.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+        self.bulk_add_entry.bind('<Return>', lambda e: self._bulk_add_tag())
+        
+        tk.Button(add_bulk_frame, text="Add to All", command=self._bulk_add_tag,
+                bg='#4CAF50', fg='white', font=('Arial', 8)).pack(side=tk.LEFT, padx=2)
+        
+        # Remove tag from all
+        tk.Button(ops_frame, text="Remove Selected Tag from All Images", 
+                command=self._bulk_remove_tag,
+                bg='#F44336', fg='white', font=('Arial', 9)).pack(fill=tk.X, pady=3)
+        
+        # Rename tag in all
+        tk.Button(ops_frame, text="Rename Selected Tag in All Images", 
+                command=self._bulk_rename_tag,
+                bg='#FF9800', fg='white', font=('Arial', 9)).pack(fill=tk.X, pady=3)
+        
+        # Info text
+        info_text = tk.Label(
+            suggest_frame,
+            text="Bulk operations affect all selected images.\nDouble-click a tag to add to current image.",
+            bg='#f5f5f5', fg='#666', font=('Arial', 8), justify=tk.LEFT
+        )
+        info_text.pack(pady=5, padx=10)
+
+    def _update_selected_list(self):
+        """Update tag list from selected images only"""
+        self.selected_listbox.delete(0, tk.END)
+        
+        # Get filter text
+        filter_text = self.selected_filter_entry.get().strip().lower() if hasattr(self, 'selected_filter_entry') else ''
+        
+        # Count tags only from selected images
+        tag_counts = {}
+        for img_path in self.image_list:
+            tags = self.data_manager.get_tags(img_path)
+            for tag in tags:
+                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+        
+        # Sort by frequency
+        sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
+        
+        # Get current image tags for highlighting
+        current_tags = set()
+        if self.current_image_path:
+            current_tags = set(self.data_manager.get_tags(self.current_image_path))
+        
+        total_selected = len(self.image_list)
+        for tag, count in sorted_tags:
+            if not filter_text or filter_text in tag.lower():
+                display_text = f"{tag} ({count}/{total_selected})"
+                
+                index = self.selected_listbox.size()
+                self.selected_listbox.insert(tk.END, display_text)
+                
+                # Highlight if tag exists in current image
+                if tag in current_tags:
+                    self.selected_listbox.itemconfig(index, bg='#C8E6C9', fg='#1B5E20')
+
     def _setup_keyboard_shortcuts(self):
         """Setup keyboard shortcuts"""
         self.window.bind('<Control-s>', lambda e: self._save_current())
@@ -203,7 +322,7 @@ class TagEditor:
         self.window.bind('<Escape>', lambda e: self._close_editor())
     
     def _load_image(self, index):
-        """Load image at index"""
+        """Load image at index - MODIFIED to preserve filters"""
         if index < 0 or index >= len(self.image_list):
             return
         
@@ -214,15 +333,19 @@ class TagEditor:
             self.original_image = Image.open(self.current_image_path)
             self._display_image()
             self._load_tags()
+            
+            # Update lists (filters are preserved automatically via entry widgets)
             self._update_global_list()
+            self._update_selected_list()
             
             filename = os.path.basename(self.current_image_path)
             self.file_label.config(text=f"{filename} ({index + 1}/{len(self.image_list)})")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load image: {e}", parent=self.window)
+
     
     def _display_image(self):
-        """Display image with zoom"""
+        """Display image with zoom - MODIFIED to align right"""
         if not self.original_image:
             return
         
@@ -249,13 +372,12 @@ class TagEditor:
         
         self.zoom_label.config(text=f"{int(self.zoom_level * 100)}%")
         
-        # Position image to the right side of canvas
-        x_pos = max(canvas_width, width)
+        # CHANGED: Position image to the RIGHT side of canvas
+        x_pos = max(0, canvas_width - width)
         self.image_canvas.coords(self.canvas_image_id, x_pos, 0)
         
-        # Center the image in canvas
-        self.image_canvas.coords(self.canvas_image_id, 0, 0)
-        self.image_canvas.configure(scrollregion=(0, 0, width, height))
+        self.image_canvas.configure(scrollregion=(0, 0, max(canvas_width, width), max(canvas_height, height)))
+
     
     def _load_tags(self):
         """Load tags for current image"""
@@ -530,23 +652,32 @@ class TagEditor:
             self._load_tags()
             self._update_global_list()
     
-    def _update_global_list(self, filter_text=''):
-        """Update global tag list from selected images only"""
+    def _update_global_list(self):
+        """Update global tag list from ALL images in dataset"""
         self.global_listbox.delete(0, tk.END)
         
-        # Count tags only from the selected subset
-        tag_counts = {}
-        for img_path in self.image_list:
-            tags = self.data_manager.get_tags(img_path)
-            for tag in tags:
-                tag_counts[tag] = tag_counts.get(tag, 0) + 1
+        # Get filter text
+        filter_text = self.global_filter_entry.get().strip().lower() if hasattr(self, 'global_filter_entry') else ''
         
-        # Sort by frequency
-        sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
+        # Get all tags from entire dataset
+        tags_by_freq = self.data_manager.get_all_tags_by_frequency()
         
-        for tag, count in sorted_tags:
-            if not filter_text or filter_text.lower() in tag.lower():
-                self.global_listbox.insert(tk.END, f"{tag} ({count})")
+        # Get current image tags for highlighting
+        current_tags = set()
+        if self.current_image_path:
+            current_tags = set(self.data_manager.get_tags(self.current_image_path))
+        
+        for tag, count in tags_by_freq:
+            if not filter_text or filter_text in tag.lower():
+                display_text = f"{tag} ({count})"
+                
+                # Insert with special formatting if tag is in current image
+                index = self.global_listbox.size()
+                self.global_listbox.insert(tk.END, display_text)
+                
+                # Highlight if tag exists in current image
+                if tag in current_tags:
+                    self.global_listbox.itemconfig(index, bg='#C8E6C9', fg='#1B5E20')
     
     def _add_from_global(self, event):
         """Add tag from global list"""
@@ -562,13 +693,39 @@ class TagEditor:
             tags.append(tag)
             self.data_manager.save_tags(self.current_image_path, tags)
             self._load_tags()
+            self._update_global_list()
+            self._update_selected_list()
     
     def _add_from_global_btn(self):
-        """Add from button click"""
+        """Add from global button click"""
         selection = self.global_listbox.curselection()
         if selection:
             self._add_from_global(None)
-    
+
+    def _add_from_selected(self, event):
+        """Add tag from selected list"""
+        selection = self.selected_listbox.curselection()
+        if not selection or not self.current_image_path:
+            return
+        
+        item = self.selected_listbox.get(selection[0])
+        tag = item.split(' (')[0]
+        
+        tags = self.data_manager.get_tags(self.current_image_path)
+        if tag not in tags:
+            tags.append(tag)
+            self.data_manager.save_tags(self.current_image_path, tags)
+            self._load_tags()
+            self._update_global_list()
+            self._update_selected_list()
+
+
+    def _add_from_selected_btn(self):
+        """Add from selected button click"""
+        selection = self.selected_listbox.curselection()
+        if selection:
+            self._add_from_selected(None)
+
     def _on_filter_change(self, event):
         """Handle filter change"""
         filter_text = self.filter_entry.get()
@@ -619,3 +776,139 @@ class TagEditor:
         # Notify bulk editor to refresh
         self.bulk_editor.refresh_from_editor()
         self.window.destroy()
+    
+    def _bulk_add_tag(self):
+        """Add tag to all selected images"""
+        new_tag = self.bulk_add_entry.get().strip()
+        if not new_tag:
+            messagebox.showwarning("Invalid Input", "Please enter a tag", parent=self.window)
+            return
+        
+        count = 0
+        for img_path in self.image_list:
+            tags = self.data_manager.get_tags(img_path)
+            if new_tag not in tags:
+                tags.append(new_tag)
+                self.data_manager.save_tags(img_path, tags)
+                count += 1
+        
+        self.bulk_add_entry.delete(0, tk.END)
+        self._load_tags()
+        self._update_global_list()
+        self._update_selected_list()
+        
+        self.status_bar.config(text=f"✓ Added '{new_tag}' to {count} images")
+        self.window.after(3000, lambda: self.status_bar.config(text="Ready"))
+
+
+    def _bulk_remove_tag(self):
+        """Remove selected tag from all selected images"""
+        # Try to get selection from either listbox
+        selection = self.selected_listbox.curselection()
+        listbox = self.selected_listbox
+        
+        if not selection:
+            selection = self.global_listbox.curselection()
+            listbox = self.global_listbox
+        
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a tag to remove", parent=self.window)
+            return
+        
+        item = listbox.get(selection[0])
+        tag = item.split(' (')[0]
+        
+        if not messagebox.askyesno(
+            "Confirm Removal",
+            f"Remove '{tag}' from all {len(self.image_list)} selected images?",
+            parent=self.window
+        ):
+            return
+        
+        count = 0
+        for img_path in self.image_list:
+            tags = self.data_manager.get_tags(img_path)
+            if tag in tags:
+                tags.remove(tag)
+                self.data_manager.save_tags(img_path, tags)
+                count += 1
+        
+        self._load_tags()
+        self._update_global_list()
+        self._update_selected_list()
+        
+        self.status_bar.config(text=f"✓ Removed '{tag}' from {count} images")
+        self.window.after(3000, lambda: self.status_bar.config(text="Ready"))
+
+
+    def _bulk_rename_tag(self):
+        """Rename selected tag in all selected images"""
+        # Try to get selection from either listbox
+        selection = self.selected_listbox.curselection()
+        listbox = self.selected_listbox
+        
+        if not selection:
+            selection = self.global_listbox.curselection()
+            listbox = self.global_listbox
+        
+        if not selection:
+            messagebox.showwarning("No Selection", "Please select a tag to rename", parent=self.window)
+            return
+        
+        item = listbox.get(selection[0])
+        old_tag = item.split(' (')[0]
+        
+        # Create custom dialog
+        dialog = tk.Toplevel(self.window)
+        dialog.title("Rename Tag in Selected Images")
+        dialog.geometry("350x120")
+        dialog.transient(self.window)
+        dialog.grab_set()
+        
+        tk.Label(dialog, text=f"Rename '{old_tag}' to:", font=('Arial', 10)).pack(pady=10)
+        entry = tk.Entry(dialog, width=35)
+        entry.insert(0, old_tag)
+        entry.pack(pady=5, padx=10)
+        entry.focus()
+        entry.select_range(0, tk.END)
+        
+        result = {'value': None}
+        
+        def confirm():
+            result['value'] = entry.get()
+            dialog.destroy()
+        
+        def cancel():
+            dialog.destroy()
+        
+        entry.bind('<Return>', lambda e: confirm())
+        entry.bind('<Escape>', lambda e: cancel())
+        
+        btn_frame = tk.Frame(dialog)
+        btn_frame.pack(pady=10)
+        tk.Button(btn_frame, text="OK", command=confirm, bg='#4CAF50', fg='white').pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="Cancel", command=cancel).pack(side=tk.LEFT, padx=5)
+        
+        dialog.wait_window()
+        
+        new_tag = result['value']
+        if not new_tag or new_tag.strip() == "" or new_tag == old_tag:
+            return
+        
+        new_tag = new_tag.strip()
+        
+        count = 0
+        for img_path in self.image_list:
+            tags = self.data_manager.get_tags(img_path)
+            if old_tag in tags:
+                idx = tags.index(old_tag)
+                tags[idx] = new_tag
+                self.data_manager.save_tags(img_path, tags)
+                count += 1
+        
+        self._load_tags()
+        self._update_global_list()
+        self._update_selected_list()
+        
+        self.status_bar.config(text=f"✓ Renamed to '{new_tag}' in {count} images")
+        self.window.after(3000, lambda: self.status_bar.config(text="Ready"))
