@@ -48,7 +48,7 @@ class AppConfig:
 def main():
     """Initialize and run the application"""
     root = tk.Tk()
-    root.title("LoRA Dataset Tagger")
+    root.title("LoRA Dataset Tagger - Bulk Editor")
     
     # Start fullscreen - cross platform
     try:
@@ -62,7 +62,28 @@ def main():
             h = root.winfo_screenheight()
             root.geometry(f"{w}x{h}+0+0")
     
-    app = GUI_App(root, AppConfig)
+    # Import here to avoid issues
+    from bulk_editor import BulkEditor
+    from data_manager import DataManager
+    
+    # Create data manager
+    data_manager = DataManager(AppConfig)
+    
+    # Ask user to select folder first
+    from tkinter import filedialog, messagebox
+    
+    folder = filedialog.askdirectory(title="Select Dataset Folder")
+    if not folder:
+        messagebox.showinfo("No Folder", "No folder selected. Exiting.")
+        return
+    
+    count = data_manager.load_data(folder)
+    if count == 0:
+        messagebox.showwarning("No Images", "No supported images found in the selected folder.")
+        return
+    
+    # Open bulk editor directly
+    bulk_editor = BulkEditor(root, data_manager)
     
     root.mainloop()
 

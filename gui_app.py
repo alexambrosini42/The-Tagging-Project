@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, simpledialog
 from PIL import Image, ImageTk
 from data_manager import DataManager
+from bulk_editor import BulkEditor
 import os
 
 class GUI_App:
@@ -230,6 +231,19 @@ class GUI_App:
         menubar.add_cascade(label="Edit", menu=edit_menu)
         edit_menu.add_command(label="Undo (Ctrl+Z)", command=self._undo)
         
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+        tools_menu.add_command(label="Bulk Editor", command=self._open_bulk_editor)
+
+    def _open_bulk_editor(self):
+        """Open the bulk editor window"""
+        if not self.data_manager.image_files:
+            messagebox.showwarning("No Data", "Please open a folder first")
+            return
+        
+        BulkEditor(self.root, self.data_manager)       
+
     def _setup_keyboard_shortcuts(self):
         """Setup keyboard shortcuts"""
         self.root.bind('<Control-z>', lambda e: self._undo())
@@ -604,15 +618,21 @@ class GUI_App:
             self.drag_ghost = None
         
         if self.drop_indicator:
-            self.drop_indicator.place_forget()
+            try:
+                self.drop_indicator.place_forget()
+            except tk.TclError:
+                pass  # Widget already destroyed
         
         if hasattr(self, 'dragged_frame') and self.dragged_frame:
-            self.dragged_frame.config(bg='#E3F2FD', highlightbackground='#90CAF9', highlightthickness=1)
-            for child in self.dragged_frame.winfo_children():
-                child.config(bg='#E3F2FD')
-                for subchild in child.winfo_children():
-                    if isinstance(subchild, tk.Label):
-                        subchild.config(bg='#E3F2FD')
+            try:
+                self.dragged_frame.config(bg='#E3F2FD', highlightbackground='#90CAF9', highlightthickness=1)
+                for child in self.dragged_frame.winfo_children():
+                    child.config(bg='#E3F2FD')
+                    for subchild in child.winfo_children():
+                        if isinstance(subchild, tk.Label):
+                            subchild.config(bg='#E3F2FD')
+            except tk.TclError:
+                pass  # Widget already destroyed
         
         self.dragged_tag = None
         self.dragged_frame = None
