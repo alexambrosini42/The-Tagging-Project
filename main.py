@@ -28,6 +28,11 @@ HISTORY_MAX_DEPTH = 10
 # Supported image formats
 SUPPORTED_FORMATS = ('.jpg', '.jpeg', '.png', '.webp')
 
+POSITIVE_PROMPT_BLACKLIST = [
+    'BREAK', 'lazypos', 'lazyquality', 'masterpiece', 'best quality',
+    'high quality', 'absurdres', 'highres'
+]
+
 # ============================================
 # APPLICATION CONFIGURATION
 # ============================================
@@ -40,6 +45,7 @@ class AppConfig:
     TAG_SEPARATOR = TAG_SEPARATOR
     HISTORY_MAX_DEPTH = HISTORY_MAX_DEPTH
     SUPPORTED_FORMATS = SUPPORTED_FORMATS
+    POSITIVE_PROMPT_BLACKLIST = POSITIVE_PROMPT_BLACKLIST
 
 # ============================================
 # MAIN EXECUTION

@@ -11,17 +11,16 @@ from pathlib import Path
 
 class TagEditor:
     """Detailed tag editor for selected images"""
-    
+        
     def __init__(self, parent, data_manager, image_list, bulk_editor):
         self.parent = parent
         self.data_manager = data_manager
-        self.image_list = image_list  # Subset of images to edit
+        self.image_list = sorted(image_list, key=lambda x: Path(x).name.lower())
         self.bulk_editor = bulk_editor
         
         self.window = tk.Toplevel(parent)
         self.window.title(f"Tag Editor - {len(image_list)} images")
         
-        # Make fullscreen
         try:
             self.window.state('zoomed')
         except:
@@ -32,7 +31,6 @@ class TagEditor:
                 h = self.window.winfo_screenheight()
                 self.window.geometry(f"{w}x{h}+0+0")
         
-        # State
         self.current_index = 0
         self.zoom_level = 1.0
         self.fit_to_view = True
@@ -45,10 +43,9 @@ class TagEditor:
         self._setup_ui()
         self._setup_keyboard_shortcuts()
         
-        # Load first image
         if self.image_list:
             self._load_image(0)
-    
+
     def _setup_ui(self):
         """Build the tag editor UI"""
         main_container = tk.PanedWindow(self.window, orient=tk.HORIZONTAL, sashwidth=5)
@@ -155,11 +152,9 @@ class TagEditor:
         tk.Button(add_frame, text="Add", command=self._add_tag, bg='#2196F3', fg='white').pack(side=tk.LEFT)
     
     def _create_suggestion_panel(self, parent):
-        """Create suggestions panel with separate global/local tabs and bulk operations"""
         suggest_frame = tk.Frame(parent, bg='#f5f5f5')
         parent.add(suggest_frame, width=350)
         
-        # Info label
         info = tk.Label(
             suggest_frame, 
             text=f"Tag Management - {len(self.image_list)} selected images",
@@ -167,15 +162,12 @@ class TagEditor:
         )
         info.pack(pady=10, padx=10)
         
-        # Notebook for Global/Selected tabs
         notebook = ttk.Notebook(suggest_frame)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
-        # === TAB 1: Global Tags (all images) ===
         global_tab = tk.Frame(notebook, bg='white')
         notebook.add(global_tab, text='All Tags (Global)')
         
-        # Filter for global
         global_filter_frame = tk.Frame(global_tab, bg='white')
         global_filter_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -190,7 +182,6 @@ class TagEditor:
             bg='#666', fg='white', font=('Arial', 8)
         ).pack(side=tk.LEFT, padx=2)
         
-        # Global listbox
         global_list_frame = tk.Frame(global_tab, bg='white')
         global_list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -206,11 +197,9 @@ class TagEditor:
                 command=self._add_from_global_btn,
                 bg='#2196F3', fg='white').pack(fill=tk.X, padx=10, pady=5)
         
-        # === TAB 2: Selected Images Tags ===
         selected_tab = tk.Frame(notebook, bg='white')
         notebook.add(selected_tab, text='Tags in Selection')
         
-        # Filter for selected
         selected_filter_frame = tk.Frame(selected_tab, bg='white')
         selected_filter_frame.pack(fill=tk.X, padx=10, pady=10)
         
@@ -225,7 +214,6 @@ class TagEditor:
             bg='#666', fg='white', font=('Arial', 8)
         ).pack(side=tk.LEFT, padx=2)
         
-        # Selected listbox
         selected_list_frame = tk.Frame(selected_tab, bg='white')
         selected_list_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         
@@ -241,12 +229,20 @@ class TagEditor:
                 command=self._add_from_selected_btn,
                 bg='#2196F3', fg='white').pack(fill=tk.X, padx=10, pady=5)
         
-        # === BULK OPERATIONS ===
+        metadata_tab = tk.Frame(notebook, bg='white')
+        notebook.add(metadata_tab, text='Image Metadata')
+        
+        metadata_scroll = tk.Scrollbar(metadata_tab)
+        metadata_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.metadata_text = tk.Text(metadata_tab, wrap=tk.WORD, yscrollcommand=metadata_scroll.set, font=('Arial', 9))
+        self.metadata_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+        metadata_scroll.config(command=self.metadata_text.yview)
+        
         ops_frame = tk.LabelFrame(suggest_frame, text="Bulk Operations (All Selected Images)", 
                                 bg='#f5f5f5', font=('Arial', 10, 'bold'), padx=10, pady=10)
         ops_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        # Add tag to all
         add_bulk_frame = tk.Frame(ops_frame, bg='#f5f5f5')
         add_bulk_frame.pack(fill=tk.X, pady=3)
         
@@ -258,17 +254,14 @@ class TagEditor:
         tk.Button(add_bulk_frame, text="Add to All", command=self._bulk_add_tag,
                 bg='#4CAF50', fg='white', font=('Arial', 8)).pack(side=tk.LEFT, padx=2)
         
-        # Remove tag from all
         tk.Button(ops_frame, text="Remove Selected Tag from All Images", 
                 command=self._bulk_remove_tag,
                 bg='#F44336', fg='white', font=('Arial', 9)).pack(fill=tk.X, pady=3)
         
-        # Rename tag in all
         tk.Button(ops_frame, text="Rename Selected Tag in All Images", 
                 command=self._bulk_rename_tag,
                 bg='#FF9800', fg='white', font=('Arial', 9)).pack(fill=tk.X, pady=3)
         
-        # Info text
         info_text = tk.Label(
             suggest_frame,
             text="Bulk operations affect all selected images.\nDouble-click a tag to add to current image.",
@@ -313,16 +306,15 @@ class TagEditor:
     def _setup_keyboard_shortcuts(self):
         """Setup keyboard shortcuts"""
         self.window.bind('<Control-s>', lambda e: self._save_current())
-        self.window.bind('<Right>', lambda e: self._next_image())
-        self.window.bind('<Left>', lambda e: self._previous_image())
+        # self.window.bind('<Right>', lambda e: self._next_image())
+        self.window.bind('<Control-Left>', lambda e: self._previous_image())
         self.window.bind('<Control-Right>', lambda e: self._save_and_next())
-        self.window.bind('<plus>', lambda e: self._zoom_in())
-        self.window.bind('<minus>', lambda e: self._zoom_out())
+        self.window.bind('<Control-plus>', lambda e: self._zoom_in())
+        self.window.bind('<Control-minus>', lambda e: self._zoom_out())
         self.window.bind('<Key-0>', lambda e: self._zoom_reset())
         self.window.bind('<Escape>', lambda e: self._close_editor())
-    
+        
     def _load_image(self, index):
-        """Load image at index - MODIFIED to preserve filters"""
         if index < 0 or index >= len(self.image_list):
             return
         
@@ -333,8 +325,8 @@ class TagEditor:
             self.original_image = Image.open(self.current_image_path)
             self._display_image()
             self._load_tags()
+            self._load_metadata()
             
-            # Update lists (filters are preserved automatically via entry widgets)
             self._update_global_list()
             self._update_selected_list()
             
@@ -343,6 +335,23 @@ class TagEditor:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load image: {e}", parent=self.window)
 
+    def _load_metadata(self):
+        self.metadata_text.delete('1.0', tk.END)
+        
+        if not self.current_image_path:
+            self.metadata_text.insert('1.0', "No image loaded")
+            return
+        
+        if not self.current_image_path.lower().endswith('.png'):
+            self.metadata_text.insert('1.0', "Not a PNG file - metadata only available for PNG images")
+            return
+        
+        metadata = self.data_manager.get_png_metadata(self.current_image_path)
+        
+        if metadata:
+            self.metadata_text.insert('1.0', metadata)
+        else:
+            self.metadata_text.insert('1.0', "No metadata found in this PNG file")
     
     def _display_image(self):
         """Display image with zoom - MODIFIED to align right"""
@@ -589,9 +598,8 @@ class TagEditor:
         
         self.dragged_tag = None
         self.dragged_frame = None
-    
+        
     def _edit_tag(self, old_tag, frame):
-        """Edit tag in-place"""
         for child in frame.winfo_children():
             child.destroy()
         
@@ -616,6 +624,7 @@ class TagEditor:
                     self.data_manager.save_tags(self.current_image_path, tags)
             self._load_tags()
             self._update_global_list()
+            self._update_selected_list()
         
         entry.bind('<Return>', save_edit)
         entry.bind('<Escape>', lambda e: self._load_tags())
@@ -624,9 +633,8 @@ class TagEditor:
                         font=('Arial', 12, 'bold'), cursor='hand2')
         save_btn.pack(side=tk.LEFT, padx=4)
         save_btn.bind('<Button-1>', lambda e: save_edit())
-    
+
     def _add_tag(self):
-        """Add new tag"""
         new_tag = self.new_tag_entry.get().strip()
         if not new_tag or not self.current_image_path:
             return
@@ -637,11 +645,11 @@ class TagEditor:
             self.data_manager.save_tags(self.current_image_path, tags)
             self._load_tags()
             self._update_global_list()
+            self._update_selected_list()
         
         self.new_tag_entry.delete(0, tk.END)
-    
+
     def _remove_tag(self, tag):
-        """Remove tag"""
         if not self.current_image_path:
             return
         
@@ -651,7 +659,8 @@ class TagEditor:
             self.data_manager.save_tags(self.current_image_path, tags)
             self._load_tags()
             self._update_global_list()
-    
+            self._update_selected_list()
+
     def _update_global_list(self):
         """Update global tag list from ALL images in dataset"""
         self.global_listbox.delete(0, tk.END)
@@ -842,8 +851,6 @@ class TagEditor:
 
 
     def _bulk_rename_tag(self):
-        """Rename selected tag in all selected images"""
-        # Try to get selection from either listbox
         selection = self.selected_listbox.curselection()
         listbox = self.selected_listbox
         
@@ -856,17 +863,25 @@ class TagEditor:
             return
         
         item = listbox.get(selection[0])
-        old_tag = item.split(' (')[0]
         
-        # Create custom dialog
+        import re
+        match = re.match(r'^(.+?)\s+\[(\d+(?:/\d+)?)\]$', item)
+        if match:
+            old_tag = match.group(1)
+        else:
+            old_tag = item
+        
         dialog = tk.Toplevel(self.window)
         dialog.title("Rename Tag in Selected Images")
-        dialog.geometry("350x120")
+        dialog.geometry("400x150")
         dialog.transient(self.window)
         dialog.grab_set()
         
-        tk.Label(dialog, text=f"Rename '{old_tag}' to:", font=('Arial', 10)).pack(pady=10)
-        entry = tk.Entry(dialog, width=35)
+        tk.Label(dialog, text=f"Old tag:", font=('Arial', 9, 'bold')).pack(pady=(10, 2))
+        tk.Label(dialog, text=old_tag, font=('Arial', 10), fg='#1565C0').pack(pady=(0, 10))
+        
+        tk.Label(dialog, text="New tag:", font=('Arial', 9, 'bold')).pack(pady=2)
+        entry = tk.Entry(dialog, width=40, font=('Arial', 10))
         entry.insert(0, old_tag)
         entry.pack(pady=5, padx=10)
         entry.focus()

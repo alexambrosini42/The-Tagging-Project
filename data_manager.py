@@ -85,11 +85,8 @@ class DataManager:
         return self.data.get(filename, []).copy()
     
     def save_tags(self, filename, new_tags_list):
-        """Save tags to file with cleanup and formatting"""
-        # Store current state for undo
         self._push_history(filename, self.data.get(filename, []).copy())
         
-        # Cleanup: trim whitespace, remove duplicates while preserving order
         cleaned_tags = []
         seen = set()
         for tag in new_tags_list:
@@ -100,15 +97,13 @@ class DataManager:
                 cleaned_tags.append(tag)
                 seen.add(tag)
         
-        # Update internal data
         self.data[filename] = cleaned_tags
         
-        # Write to file
         txt_path = Path(filename).with_suffix('.txt')
         content = self.config.TAG_SEPARATOR.join(cleaned_tags)
         
         try:
-            with open(txt_path, 'w', encoding='utf-8') as f:
+            with open(txt_path, 'w', encoding='utf-8', newline='\n') as f:
                 f.write(content)
             self.recalculate_frequency()
             return True
@@ -253,3 +248,41 @@ class DataManager:
                     break
         
         return filtered
+    
+    def get_png_metadata(self, filename):
+        from PIL import Image
+        import re
+        
+        if not filename.lower().endswith('.png'):
+            return None
+        
+        try:
+            img = Image.open(filename)
+            
+            if not hasattr(img, 'info') or 'parameters' not in img.info:
+                return None
+            
+            parameters = img.info['parameters']
+            
+            if not parameters:
+                return None
+            
+            pattern = r'(?:^|(?<=>))([^<>]*)(?=(?:<[^>]+:[^>]+>|Negative prompt:))'
+            matches = re.findall(pattern, parameters, re.MULTILINE | re.DOTALL)
+            
+            if matches:
+                positive_prompt = matches[0].strip()
+                if positive_prompt:
+                    for blacklist_item in self.config.POSITIVE_PROMPT_BLACKLIST:
+                        positive_prompt = positive_prompt.replace(blacklist_item, '')
+                    
+                    positive_prompt = re.sub(r',\s*,', ',', positive_prompt)
+                    positive_prompt = positive_prompt.strip(', ')
+                    
+                    return positive_prompt
+            
+            return parameters
+            
+        except Exception as e:
+            print(f"Error reading PNG metadata: {e}")
+            return None

@@ -248,11 +248,11 @@ class GUI_App:
         """Setup keyboard shortcuts"""
         self.root.bind('<Control-z>', lambda e: self._undo())
         self.root.bind('<Control-s>', lambda e: self._save_current())
-        self.root.bind('<Right>', lambda e: self._next_image())
-        self.root.bind('<Left>', lambda e: self._previous_image())
+        # self.root.bind('<Control-Right>', lambda e: self._next_image())
+        self.root.bind('<Control-Left>', lambda e: self._previous_image())
         self.root.bind('<Control-Right>', lambda e: self._save_and_next())
-        self.root.bind('<plus>', lambda e: self._zoom_in())
-        self.root.bind('<minus>', lambda e: self._zoom_out())
+        self.root.bind('<Control-plus>', lambda e: self._zoom_in())
+        self.root.bind('<Control-minus>', lambda e: self._zoom_out())
         self.root.bind('<Key-0>', lambda e: self._zoom_reset())
         
     def _open_folder(self):

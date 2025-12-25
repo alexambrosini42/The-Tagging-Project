@@ -299,27 +299,24 @@ class BulkEditor:
         self._create_grid_items()
         
     def _create_grid_items(self):
-        """Create thumbnail items in grid layout"""
         canvas_width = self.grid_canvas.winfo_width()
         if canvas_width <= 1:
-            # Canvas not ready yet
             self.window.after(100, self._create_grid_items)
             return
         
-        # Calculate columns based on thumbnail size + padding
-        item_width = self.thumbnail_size + 20  # 10px padding each side
+        item_width = self.thumbnail_size + 20
         cols = max(1, canvas_width // item_width)
         
         row_frame = None
         col_count = 0
         
-        for idx, img_path in enumerate(self.data_manager.image_files):
-            # Start new row if needed
+        sorted_images = sorted(self.data_manager.image_files, key=lambda x: Path(x).name.lower())
+        
+        for idx, img_path in enumerate(sorted_images):
             if col_count == 0:
-                row_frame = tk.Frame(self.grid_container, bg='#fafafa')
+                row_frame = tk.Frame(self.grid_container, bg=self.bg_color)
                 row_frame.pack(side=tk.TOP, fill=tk.X)
             
-            # Create image item
             self._create_thumbnail_item(img_path, row_frame)
             
             col_count += 1
@@ -549,7 +546,6 @@ class BulkEditor:
         self.window.after(3000, self._update_selection_info)
         
     def _bulk_rename_tag(self):
-        """Rename a tag in all selected images"""
         if not self.selected_images:
             messagebox.showwarning("No Selection", "Please select images first", parent=self.window)
             return
@@ -559,21 +555,28 @@ class BulkEditor:
             messagebox.showwarning("Invalid Selection", "Please select exactly one tag to rename", parent=self.window)
             return
         
-        # Get old tag name
         item = self.tag_listbox.get(selection[0])
-        old_tag = item.split(' (')[0]
         
-        # Create custom dialog
+        import re
+        match = re.match(r'^(.+?)\s+\((\d+/\d+)\)$', item)
+        if match:
+            old_tag = match.group(1)
+        else:
+            old_tag = item
+        
         dialog = tk.Toplevel(self.window)
         dialog.title("Rename Tag")
-        dialog.geometry("300x100")
+        dialog.geometry("400x150")
         dialog.transient(self.window)
         dialog.grab_set()
         
-        tk.Label(dialog, text=f"Rename '{old_tag}' to:").pack(pady=10)
-        entry = tk.Entry(dialog, width=30)
+        tk.Label(dialog, text=f"Old tag:", font=('Arial', 9, 'bold')).pack(pady=(10, 2))
+        tk.Label(dialog, text=old_tag, font=('Arial', 10), fg='#1565C0').pack(pady=(0, 10))
+        
+        tk.Label(dialog, text="New tag:", font=('Arial', 9, 'bold')).pack(pady=2)
+        entry = tk.Entry(dialog, width=40, font=('Arial', 10))
         entry.insert(0, old_tag)
-        entry.pack(pady=5)
+        entry.pack(pady=5, padx=10)
         entry.focus()
         entry.select_range(0, tk.END)
         
@@ -591,7 +594,7 @@ class BulkEditor:
         
         btn_frame = tk.Frame(dialog)
         btn_frame.pack(pady=10)
-        tk.Button(btn_frame, text="OK", command=confirm).pack(side=tk.LEFT, padx=5)
+        tk.Button(btn_frame, text="OK", command=confirm, bg='#4CAF50', fg='white').pack(side=tk.LEFT, padx=5)
         tk.Button(btn_frame, text="Cancel", command=cancel).pack(side=tk.LEFT, padx=5)
         
         dialog.wait_window()
@@ -602,7 +605,6 @@ class BulkEditor:
         
         new_tag = new_tag.strip()
         
-        # Rename in all selected images
         count = 0
         for img_path in self.selected_images:
             tags = self.data_manager.get_tags(img_path)
@@ -804,7 +806,6 @@ class BulkEditor:
         self._create_filtered_grid(matching_images)
 
     def _create_filtered_grid(self, image_list):
-        """Create grid with specific image list"""
         canvas_width = self.grid_canvas.winfo_width()
         if canvas_width <= 1:
             self.window.after(100, lambda: self._create_filtered_grid(image_list))
@@ -816,7 +817,34 @@ class BulkEditor:
         row_frame = None
         col_count = 0
         
-        for img_path in image_list:
+        sorted_images = sorted(image_list, key=lambda x: Path(x).name.lower())
+        
+        for img_path in sorted_images:
+            if col_count == 0:
+                row_frame = tk.Frame(self.grid_container, bg=self.bg_color)
+                row_frame.pack(side=tk.TOP, fill=tk.X)
+            
+            self._create_thumbnail_item(img_path, row_frame)
+            
+            col_count += 1
+            if col_count >= cols:
+                col_count = 0
+                
+    def _create_grid_items(self):
+        canvas_width = self.grid_canvas.winfo_width()
+        if canvas_width <= 1:
+            self.window.after(100, self._create_grid_items)
+            return
+        
+        item_width = self.thumbnail_size + 20
+        cols = max(1, canvas_width // item_width)
+        
+        row_frame = None
+        col_count = 0
+        
+        sorted_images = sorted(self.data_manager.image_files, key=lambda x: Path(x).name.lower())
+        
+        for idx, img_path in enumerate(sorted_images):
             if col_count == 0:
                 row_frame = tk.Frame(self.grid_container, bg=self.bg_color)
                 row_frame.pack(side=tk.TOP, fill=tk.X)
