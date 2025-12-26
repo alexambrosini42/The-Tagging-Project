@@ -270,23 +270,20 @@ class TagEditor:
         info_text.pack(pady=5, padx=10)
 
     def _update_selected_list(self):
-        """Update tag list from selected images only"""
+        scroll_pos = self._get_selected_scroll_position()
+        
         self.selected_listbox.delete(0, tk.END)
         
-        # Get filter text
         filter_text = self.selected_filter_entry.get().strip().lower() if hasattr(self, 'selected_filter_entry') else ''
         
-        # Count tags only from selected images
         tag_counts = {}
         for img_path in self.image_list:
             tags = self.data_manager.get_tags(img_path)
             for tag in tags:
                 tag_counts[tag] = tag_counts.get(tag, 0) + 1
         
-        # Sort by frequency
         sorted_tags = sorted(tag_counts.items(), key=lambda x: (-x[1], x[0]))
         
-        # Get current image tags for highlighting
         current_tags = set()
         if self.current_image_path:
             current_tags = set(self.data_manager.get_tags(self.current_image_path))
@@ -299,9 +296,10 @@ class TagEditor:
                 index = self.selected_listbox.size()
                 self.selected_listbox.insert(tk.END, display_text)
                 
-                # Highlight if tag exists in current image
                 if tag in current_tags:
                     self.selected_listbox.itemconfig(index, bg='#C8E6C9', fg='#1B5E20')
+        
+        self.window.after(10, lambda: self._restore_selected_scroll_position(scroll_pos))
 
     def _setup_keyboard_shortcuts(self):
         """Setup keyboard shortcuts"""
@@ -352,7 +350,31 @@ class TagEditor:
             self.metadata_text.insert('1.0', metadata)
         else:
             self.metadata_text.insert('1.0', "No metadata found in this PNG file")
+
+    def _get_global_scroll_position(self):
+        try:
+            return self.global_listbox.yview()[0]
+        except:
+            return 0
     
+    def _restore_global_scroll_position(self, pos):
+        try:
+            self.global_listbox.yview_moveto(pos)
+        except:
+            pass
+    
+    def _get_selected_scroll_position(self):
+        try:
+            return self.selected_listbox.yview()[0]
+        except:
+            return 0
+    
+    def _restore_selected_scroll_position(self, pos):
+        try:
+            self.selected_listbox.yview_moveto(pos)
+        except:
+            pass
+
     def _display_image(self):
         """Display image with zoom - MODIFIED to align right"""
         if not self.original_image:
@@ -419,17 +441,15 @@ class TagEditor:
             current_width += estimated_width
     
     def _create_tag_pill_in_row(self, tag, index, parent_row):
-        """Create tag pill"""
         pill_frame = tk.Frame(parent_row, bg='#E3F2FD', bd=0, relief=tk.FLAT)
-        pill_frame.pack(side=tk.LEFT, padx=3, pady=3)
+        pill_frame.pack(side=tk.LEFT, padx=self.data_manager.config.TAG_PILL_MARGIN, pady=self.data_manager.config.TAG_PILL_MARGIN)
         
         inner = tk.Frame(pill_frame, bg='#E3F2FD')
-        inner.pack(padx=8, pady=4)
+        inner.pack(padx=self.data_manager.config.TAG_PILL_PADDING_X, pady=self.data_manager.config.TAG_PILL_PADDING_Y)
         
         pill_frame.config(highlightbackground='#90CAF9', highlightthickness=1)
         pill_frame.tag_name = tag
         
-        # Drag handle
         drag_label = tk.Label(inner, text="⋮⋮", bg='#E3F2FD', fg='#757575', 
                             font=('Arial', 8), cursor='fleur')
         drag_label.pack(side=tk.LEFT, padx=(0, 4))
@@ -439,12 +459,13 @@ class TagEditor:
             widget.bind('<B1-Motion>', lambda e: self._on_drag_motion(e))
             widget.bind('<ButtonRelease-1>', lambda e, f=pill_frame: self._end_drag(e, f))
         
-        tag_label = tk.Label(inner, text=tag, bg='#E3F2FD', fg='#1565C0', font=('Arial', 10))
+        tag_label = tk.Label(inner, text=tag, bg='#E3F2FD', fg='#1565C0',
+                        font=('Arial', self.data_manager.config.TAG_PILL_FONT_SIZE))
         tag_label.pack(side=tk.LEFT, padx=2)
         tag_label.bind('<Double-Button-1>', lambda e, t=tag, f=pill_frame: self._edit_tag(t, f))
         
         remove_btn = tk.Label(inner, text="✕", bg='#E3F2FD', fg='#D32F2F',
-                            font=('Arial', 10, 'bold'), cursor='hand2')
+                            font=('Arial', self.data_manager.config.TAG_PILL_FONT_SIZE, 'bold'), cursor='hand2')
         remove_btn.pack(side=tk.LEFT, padx=(4, 0))
         remove_btn.bind('<Button-1>', lambda e, t=tag: self._remove_tag(t))
         
@@ -515,11 +536,12 @@ class TagEditor:
             
             target_x = target_frame.winfo_rootx()
             target_width = target_frame.winfo_width()
+            target_height = target_frame.winfo_height()
             
             if event.x_root < target_x + target_width / 2:
-                self.drop_indicator.place(in_=target_frame, relx=0, rely=0, relheight=1, width=3, x=-5)
+                self.drop_indicator.place(in_=target_frame, relx=0, rely=0, relheight=1, width=3, anchor=tk.W)
             else:
-                self.drop_indicator.place(in_=target_frame, relx=1, rely=0, relheight=1, width=3, x=2)
+                self.drop_indicator.place(in_=target_frame, relx=1, rely=0, relheight=1, width=3, anchor=tk.E)
         else:
             if self.drop_indicator:
                 self.drop_indicator.place_forget()
@@ -662,16 +684,14 @@ class TagEditor:
             self._update_selected_list()
 
     def _update_global_list(self):
-        """Update global tag list from ALL images in dataset"""
+        scroll_pos = self._get_global_scroll_position()
+        
         self.global_listbox.delete(0, tk.END)
         
-        # Get filter text
         filter_text = self.global_filter_entry.get().strip().lower() if hasattr(self, 'global_filter_entry') else ''
         
-        # Get all tags from entire dataset
         tags_by_freq = self.data_manager.get_all_tags_by_frequency()
         
-        # Get current image tags for highlighting
         current_tags = set()
         if self.current_image_path:
             current_tags = set(self.data_manager.get_tags(self.current_image_path))
@@ -680,13 +700,13 @@ class TagEditor:
             if not filter_text or filter_text in tag.lower():
                 display_text = f"{tag} ({count})"
                 
-                # Insert with special formatting if tag is in current image
                 index = self.global_listbox.size()
                 self.global_listbox.insert(tk.END, display_text)
                 
-                # Highlight if tag exists in current image
                 if tag in current_tags:
                     self.global_listbox.itemconfig(index, bg='#C8E6C9', fg='#1B5E20')
+        
+        self.window.after(10, lambda: self._restore_global_scroll_position(scroll_pos))
     
     def _add_from_global(self, event):
         """Add tag from global list"""
@@ -865,7 +885,7 @@ class TagEditor:
         item = listbox.get(selection[0])
         
         import re
-        match = re.match(r'^(.+?)\s+\[(\d+(?:/\d+)?)\]$', item)
+        match = re.match(r'^(.+?)\s+\((\d+(?:/\d+)?)\)$', item)
         if match:
             old_tag = match.group(1)
         else:

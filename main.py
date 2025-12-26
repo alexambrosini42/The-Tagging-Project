@@ -24,7 +24,7 @@ TAG_SEPARATOR = ", "
 
 # Maximum number of undo operations to keep in history
 HISTORY_MAX_DEPTH = 10
-
+UNCATEGORIZED_PANEL_WIDTH = 500
 # Supported image formats
 SUPPORTED_FORMATS = ('.jpg', '.jpeg', '.png', '.webp')
 
@@ -32,7 +32,10 @@ POSITIVE_PROMPT_BLACKLIST = [
     'BREAK', 'lazypos', 'lazyquality', 'masterpiece', 'best quality',
     'high quality', 'absurdres', 'highres'
 ]
-
+TAG_PILL_FONT_SIZE = 10
+TAG_PILL_PADDING_X = 8
+TAG_PILL_PADDING_Y = 4
+TAG_PILL_MARGIN = 3
 # ============================================
 # APPLICATION CONFIGURATION
 # ============================================
@@ -46,6 +49,11 @@ class AppConfig:
     HISTORY_MAX_DEPTH = HISTORY_MAX_DEPTH
     SUPPORTED_FORMATS = SUPPORTED_FORMATS
     POSITIVE_PROMPT_BLACKLIST = POSITIVE_PROMPT_BLACKLIST
+    TAG_PILL_FONT_SIZE = TAG_PILL_FONT_SIZE
+    TAG_PILL_PADDING_X = TAG_PILL_PADDING_X
+    TAG_PILL_PADDING_Y = TAG_PILL_PADDING_Y
+    TAG_PILL_MARGIN = TAG_PILL_MARGIN
+    UNCATEGORIZED_PANEL_WIDTH = UNCATEGORIZED_PANEL_WIDTH
 
 # ============================================
 # MAIN EXECUTION

@@ -1,0 +1,74 @@
+{
+  "categories": [
+    {
+      "name": "Triggerword/Style",
+      "description": "Character trigger words and art style tags",
+      "auto_keywords": ["*_style", "*style", "anime*", "realistic", "painting", "pixel*", "*quality", "bad *"]
+    },
+    {
+      "name": "Shot Type",
+      "description": "Camera angles, shot composition and framing",
+      "auto_keywords": ["*shot", "*_shot", "*view", "*_view", "*pov*", "dutch_angle", "full body", "full_body"]
+    },
+    {
+      "name": "From/Angle",
+      "description": "Viewing angle and perspective",
+      "auto_keywords": ["from_*", "from *", "straight on", "straight_on", "straight-on", "low angle", "high angle"]
+    },
+    {
+      "name": "Looking At",
+      "description": "Eye direction and gaze",
+      "auto_keywords": ["looking*", "looking_*", "eye_contact"]
+    },
+    {
+      "name": "Lighting/Color",
+      "description": "Lighting conditions and color palette",
+      "auto_keywords": ["day", "night", "*_light", "*_lighting", "color*", "*palette*"]
+    },
+    {
+      "name": "Relationship/Focus",
+      "description": "Character relationships and focus",
+      "auto_keywords": ["*focus", "solo*", "group", "2girls", "2boys"]
+    },
+    {
+      "name": "1st Subject",
+      "description": "Main character appearance - gender, hair, eyes, clothing, body features",
+      "auto_keywords": ["1girl", "*girl", "*woman","hair*", "*_hair", "* hair", "*eye*", "* ears", "*dress", "*shirt", "*skirt", "*bikini", "*chest", "*breast", "*_outfit", "*nipple*", "*pussy*", "*tail", "*bangs", "*choker", "*hat", "*head*", "*crop top", "cum on*", "cum_on*", "smile", "happy", "open mouth", "tongue out", "ahegao", "female orgasm", "pussy*", "*female"]
+    },
+    {
+      "name": "1st Subject Action/Pose",
+      "description": "Main character pose, stance and action",
+      "auto_keywords": ["standing", "sitting*", "lying*", "kneeling*", "arms*", "hand*", "*pose", "on side", "legs up", "leg up", "walking*", "jumping*"]
+    },
+    {
+      "name": "2nd Subject",
+      "description": "Secondary character appearance",
+      "auto_keywords": ["2girls", "2boys", "1girl_1boy"]
+    },
+    {
+      "name": "2nd Subject Action/Pose",
+      "description": "Secondary character pose and action",
+      "auto_keywords": ["1boy", "1man", "* male*", "*boy*", "*penis", "testicles", "erection"]
+    },
+    {
+      "name": "Main Action",
+      "description": "Primary interaction or activity happening in the scene",
+      "auto_keywords": ["hetero", "yuri", "male on futa", "futa on girl", "futa on futa","vaginal*","anal*","*fellatio*","sex", "*kissing*", "hugging", "holding*", "*ing", "*holding*", "*grab*", "*sex", "*masturbation*", "reverse*", "*position", "after*", "just the tip", "just_the_tip", "deep penetration", "imminent*", ""]
+    },
+    {
+      "name": "Background",
+      "description": "Scene background and environment",
+      "auto_keywords": ["*background", "background", "*_background", "indoors", "outdoors", "scenery", "tree", "* wall", "*sky"]
+    },
+    {
+      "name": "Props",
+      "description": "Objects and items in the scene",
+      "auto_keywords": ["with_*", "weapon", "book", "phone", "bed", "excessive cum", "heart", "*effect*", "cum", "spoken*"]
+    },
+    {
+      "name": "Others",
+      "description": "Miscellaneous tags that don't fit other categories",
+      "auto_keywords": []
+    }
+  ]
+}

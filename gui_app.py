@@ -367,44 +367,34 @@ class GUI_App:
             current_width += estimated_width
 
     def _create_tag_pill_in_row(self, tag, index, parent_row):
-        """Create a pill-style tag widget in a specific row"""
         pill_frame = tk.Frame(parent_row, bg='#E3F2FD', bd=0, relief=tk.FLAT)
-        pill_frame.pack(side=tk.LEFT, padx=3, pady=3)
+        pill_frame.pack(side=tk.LEFT, padx=self.config.TAG_PILL_MARGIN, pady=self.config.TAG_PILL_MARGIN)
         
-        # Inner frame for padding
         inner = tk.Frame(pill_frame, bg='#E3F2FD')
-        inner.pack(padx=8, pady=4)
+        inner.pack(padx=self.config.TAG_PILL_PADDING_X, pady=self.config.TAG_PILL_PADDING_Y)
         
-        # Make pill rounded appearance
         pill_frame.config(highlightbackground='#90CAF9', highlightthickness=1)
-        
-        # Store tag reference on frame for drag-drop
         pill_frame.tag_name = tag
         
-        # Drag handle
         drag_label = tk.Label(inner, text="⋮⋮", bg='#E3F2FD', fg='#757575', 
                             font=('Arial', 8), cursor='fleur')
         drag_label.pack(side=tk.LEFT, padx=(0, 4))
         
-        # Bind drag to entire pill
         for widget in [pill_frame, inner, drag_label]:
             widget.bind('<Button-1>', lambda e, t=tag, f=pill_frame: self._start_drag(e, t, f))
             widget.bind('<B1-Motion>', lambda e: self._on_drag_motion(e))
             widget.bind('<ButtonRelease-1>', lambda e, f=pill_frame: self._end_drag(e, f))
         
-        # Tag text (double-click to edit)
         tag_label = tk.Label(inner, text=tag, bg='#E3F2FD', fg='#1565C0',
-                        font=('Arial', 10))
+                        font=('Arial', self.config.TAG_PILL_FONT_SIZE))
         tag_label.pack(side=tk.LEFT, padx=2)
         tag_label.bind('<Double-Button-1>', lambda e, t=tag, f=pill_frame: self._edit_tag(t, f))
         
-        # Remove button
         remove_btn = tk.Label(inner, text="✕", bg='#E3F2FD', fg='#D32F2F',
-                            font=('Arial', 10, 'bold'), cursor='hand2')
+                            font=('Arial', self.config.TAG_PILL_FONT_SIZE, 'bold'), cursor='hand2')
         remove_btn.pack(side=tk.LEFT, padx=(4, 0))
         remove_btn.bind('<Button-1>', lambda e, t=tag: [self._remove_tag(t), e.widget.master.master.master.focus_set()])
         
-        # Hover effects
         def on_enter(e):
             pill_frame.config(bg='#BBDEFB', highlightbackground='#64B5F6')
             inner.config(bg='#BBDEFB')

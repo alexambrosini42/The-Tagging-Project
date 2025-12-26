@@ -75,6 +75,12 @@ class BulkEditor:
             bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')
         ).pack(side=tk.LEFT, padx=20)
 
+        tk.Button(
+            toolbar, text="Category Organizer", 
+            command=self._open_category_organizer,
+            bg='#673AB7', fg='white', font=('Arial', 10, 'bold')
+        ).pack(side=tk.LEFT, padx=10)
+
         # Selection info
         self.selection_label = tk.Label(
             toolbar, text="0 images selected", 
@@ -113,6 +119,14 @@ class BulkEditor:
         # RIGHT: Tag operations panel
         self._create_tag_panel(main_container)
         
+    def _open_category_organizer(self):
+        if not self.selected_images:
+            messagebox.showwarning("No Selection", "Please select images first", parent=self.window)
+            return
+        
+        from category_organizer import CategoryOrganizer
+        CategoryOrganizer(self.window, self.data_manager, list(self.selected_images), self)
+
     def _create_image_grid(self, parent):
         """Create scrollable grid of images"""
         grid_frame = tk.Frame(parent, bg='white')
