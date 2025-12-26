@@ -3,17 +3,32 @@
     {
       "name": "Triggerword/Style",
       "description": "Character trigger words and art style tags",
-      "auto_keywords": ["*_style", "*style", "anime*", "realistic", "painting", "pixel*", "*quality", "bad *"]
+      "auto_keywords": ["*quality", "bad *", "*_style", "*style", "anime*", "*realism", "*realistic", "painting", "pixel*" ]
     },
     {
       "name": "Shot Type",
       "description": "Camera angles, shot composition and framing",
-      "auto_keywords": ["*shot", "*_shot", "*view", "*_view", "*pov*", "dutch_angle", "full body", "full_body"]
+      "auto_keywords": ["*shot", "*_shot", "*view", "*_view", "full body", "full_body"]
     },
     {
       "name": "From/Angle",
       "description": "Viewing angle and perspective",
-      "auto_keywords": ["from_*", "from *", "straight on", "straight_on", "straight-on", "low angle", "high angle"]
+      "auto_keywords": ["*pov*", "*angle", "from_*", "from *", "straight on", "straight_on", "straight-on", "low angle", "high angle", "*close*up"]
+    },
+    {
+      "name": "Lighting/Color",
+      "description": "Lighting conditions and color palette",
+      "auto_keywords": ["*_light", "*_lighting", "day*", "*night*",  "color*", "*palette*"]
+    },
+    {
+      "name": "Relationship/Focus",
+      "description": "Character relationships and focus",
+      "auto_keywords": ["solo*", "group", "2girls", "2boys", "*focus"]
+    },
+    {
+      "name": "Main Action",
+      "description": "Primary interaction or activity happening in the scene",
+      "auto_keywords": ["*motion*lines*", "x-ray", "cross section", "hetero", "yuri", "male*on*", "futa*on*girl","vaginal*","anal*","*fellatio*","sex", "*kiss*", "hugging", "holding*", "*ing", "*holding*", "*grab*", "*sex", "missionary*", "*cowgirl", "spooning*", "*straddling*", "*suspended congress","*masturbation*", "reverse*", "*position", "after*", "just the tip", "just_the_tip", "deep penetration", "implied*", "imminent*", "*tentacle*", "projec*cum", "cumdrip", "precum", "hug", "stomach*bulge", "creampie", "internal cumshot"]
     },
     {
       "name": "Looking At",
@@ -21,54 +36,39 @@
       "auto_keywords": ["looking*", "looking_*", "eye_contact"]
     },
     {
-      "name": "Lighting/Color",
-      "description": "Lighting conditions and color palette",
-      "auto_keywords": ["day", "night", "*_light", "*_lighting", "color*", "*palette*"]
-    },
-    {
-      "name": "Relationship/Focus",
-      "description": "Character relationships and focus",
-      "auto_keywords": ["*focus", "solo*", "group", "2girls", "2boys"]
-    },
-    {
       "name": "1st Subject",
       "description": "Main character appearance - gender, hair, eyes, clothing, body features",
-      "auto_keywords": ["1girl", "*girl", "*woman","hair*", "*_hair", "* hair", "*eye*", "* ears", "*dress", "*shirt", "*skirt", "*bikini", "*chest", "*breast", "*_outfit", "*nipple*", "*pussy*", "*tail", "*bangs", "*choker", "*hat", "*head*", "*crop top", "cum on*", "cum_on*", "smile", "happy", "open mouth", "tongue out", "ahegao", "female orgasm", "pussy*", "*female"]
+      "auto_keywords": ["1girl", "*girl", "*woman", "*skin", "hair*", "*hair", "*bangs", "sidelocks", "*eye*", "*ears", "skinny", "curvy", "chubby", "*waist", "*thighs", "*hips", "*chest", "*breast", "*breasts*", "*nipple*", "*pussy*", "feet", "toes", "soles", "*tail", "*dress", "*shirt", "*skirt", "side slit", "side_slit", "*bikini*", "* bra", "*_bra", "*panties", "*_outfit", "_outfit", "*choker", "*hat", "*head*", "*crop*top", "smile", "happy", "grin", "smug", "smirk", "open mouth", "closed mouth", ":/", "pout", ":t", ":p", ";p", "tongue out", "ahegao", "blush*", "blushing", "shushing", "wink", "winking", "female orgasm", "pussy*", "clitoris*", "cum on*", "cum_on*", "*female", "*nude", "sweat", "sweatdrops", "exausted"]
     },
     {
       "name": "1st Subject Action/Pose",
       "description": "Main character pose, stance and action",
-      "auto_keywords": ["standing", "sitting*", "lying*", "kneeling*", "arms*", "hand*", "*pose", "on side", "legs up", "leg up", "walking*", "jumping*"]
+      "auto_keywords": ["*cloth", "spread*", "standing*", "sitting*", "lying*", "kneeling*", "arms*", "hand*", "*pose", "on side", "legs up", "leg up", "walking*", "jumping*", "restrained"]
     },
     {
       "name": "2nd Subject",
       "description": "Secondary character appearance",
-      "auto_keywords": ["2girls", "2boys", "1girl_1boy"]
+      "auto_keywords": ["1boy", "1man", "2girls", "2boys", "1girl_1boy", "*penis", "half erect", "flaccid", "erection", "testicles", "*testicle*", "*ball*"]
     },
     {
       "name": "2nd Subject Action/Pose",
       "description": "Secondary character pose and action",
-      "auto_keywords": ["1boy", "1man", "* male*", "*boy*", "*penis", "testicles", "erection"]
-    },
-    {
-      "name": "Main Action",
-      "description": "Primary interaction or activity happening in the scene",
-      "auto_keywords": ["hetero", "yuri", "male on futa", "futa on girl", "futa on futa","vaginal*","anal*","*fellatio*","sex", "*kissing*", "hugging", "holding*", "*ing", "*holding*", "*grab*", "*sex", "*masturbation*", "reverse*", "*position", "after*", "just the tip", "just_the_tip", "deep penetration", "imminent*", ""]
+      "auto_keywords": ["* man*", "*_man*", "* male*", "*_male*", "*boy*", "male restrained"]
     },
     {
       "name": "Background",
       "description": "Scene background and environment",
-      "auto_keywords": ["*background", "background", "*_background", "indoors", "outdoors", "scenery", "tree", "* wall", "*sky"]
+      "auto_keywords": ["*background", "background", "*_background", "indoors", "outdoors", "*scenery*", "tree*", "* wall", "*sky"]
     },
     {
       "name": "Props",
       "description": "Objects and items in the scene",
-      "auto_keywords": ["with_*", "weapon", "book", "phone", "bed", "excessive cum", "heart", "*effect*", "cum", "spoken*"]
+      "auto_keywords": ["with_*", "weapon", "book", "phone", "bed", "cum", "excessive cum", "heart", "*effect*", "spoken*", "*stickers"]
     },
     {
       "name": "Others",
       "description": "Miscellaneous tags that don't fit other categories",
-      "auto_keywords": []
+      "auto_keywords": ["*text"]
     }
   ]
 }

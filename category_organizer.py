@@ -1107,17 +1107,43 @@ class CategoryOrganizer:
         if '*' not in pattern_lower:
             return tag_lower == pattern_lower
         
-        if pattern_lower.startswith('*') and pattern_lower.endswith('*'):
-            search_term = pattern_lower[1:-1]
-            return search_term in tag_lower
-        elif pattern_lower.startswith('*'):
-            search_term = pattern_lower[1:]
-            return tag_lower.endswith(search_term)
-        elif pattern_lower.endswith('*'):
-            search_term = pattern_lower[:-1]
-            return tag_lower.startswith(search_term)
+        parts = pattern_lower.split('*')
         
-        return False
+        if not parts[0]:
+            parts = parts[1:]
+            starts_with_wildcard = True
+        else:
+            starts_with_wildcard = False
+        
+        if not parts[-1]:
+            parts = parts[:-1]
+            ends_with_wildcard = True
+        else:
+            ends_with_wildcard = False
+        
+        if not parts:
+            return True
+        
+        current_pos = 0
+        
+        for i, part in enumerate(parts):
+            if not part:
+                continue
+            
+            pos = tag_lower.find(part, current_pos)
+            
+            if pos == -1:
+                return False
+            
+            if i == 0 and not starts_with_wildcard and pos != 0:
+                return False
+            
+            current_pos = pos + len(part)
+        
+        if not ends_with_wildcard and current_pos != len(tag_lower):
+            return False
+        
+        return True
     
     def _rename_tag_inline(self, original_tag):
         found_category = None
